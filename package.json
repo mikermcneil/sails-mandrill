@@ -1,0 +1,22 @@
+{
+  "name": "sails-mandrill",
+  "version": "0.0.0",
+  "description": "Mandrill adapter for sails.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mikermcneil/sails-mandrill.git"
+  },
+  "keywords": [
+    "sails",
+    "mandrill",
+    "email"
+  ],
+  "author": "Mike McNeil",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "gitHead": "4e650fa7589c3bb425002c1a503336affe7f0fbb"
+}
