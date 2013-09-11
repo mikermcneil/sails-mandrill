@@ -18,5 +18,8 @@
   "author": "Mike McNeil",
   "license": "MIT",
   "readmeFilename": "README.md",
-  "gitHead": "4e650fa7589c3bb425002c1a503336affe7f0fbb"
+  "gitHead": "4e650fa7589c3bb425002c1a503336affe7f0fbb",
+  "dependencies": {
+    "mandrill-api": "~1.0.33"
+  }
 }
