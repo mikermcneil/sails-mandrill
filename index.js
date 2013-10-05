@@ -30,9 +30,21 @@ module.exports = (function () {
 
 		/**
 		 * Send an email
+		 *
+		 * @param {String} cid - [optional]
+		 *		Collection/Model identity or null
+		 *		TODO: Waterline core should set `cid` if called from model context
+		 *		TODO: Waterline core should automatically apply model config
+		 *
+		 * @param {Object} options - [optional]
+		 *
+		 * @param {Function} cb - [optional]
 		 */
 
 		send: function (cid, options, cb) {
+			cb =	_.isFunction(cb) ? cb : 
+					_.isFunction(options) ? options :
+					function (){};
 			
 			options = _extendOptions(cid, options);
 			var mandrill = new Mandrill(options.apiKey);
@@ -57,6 +69,10 @@ module.exports = (function () {
 	 */
 
 	function _extendOptions(cid, options) {
+		// Ignore unexpected options, use {} instead
+		options = _.isPlainObject(options) ? options : {};
+
+		// Apply collection defaults, if relevant
 		if (cid) {
 			return _.extend({}, _collectionConfigs[cid], options);
 		}
