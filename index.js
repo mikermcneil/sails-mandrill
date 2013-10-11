@@ -12,6 +12,8 @@ module.exports = (function () {
 
 	var Adapter = {
 
+
+
 		// App-wide defaults for this adapter
 		defaults: {
 			from: {
@@ -20,7 +22,10 @@ module.exports = (function () {
 			}
 		},
 
+
+
 		registerCollection: function (collection, cb) {
+
 			// Absorb defaults into collection configuration
 			collection.config = _.defaults(collection.config, Adapter.defaults);
 
@@ -28,9 +33,14 @@ module.exports = (function () {
 			_collectionConfigs[collection.identity] = _.cloneDeep(collection.config);
 			cb();
 		},
+
+
 		teardown: function (cb) {
+
 			cb();
 		},
+
+
 
 
 		/**
@@ -46,6 +56,7 @@ module.exports = (function () {
 		 */
 
 		send: function (cid, options, cb) {
+
 			cb =	_.isFunction(cb) ? cb : 
 					_.isFunction(options) ? options :
 					function (){};
@@ -61,10 +72,30 @@ module.exports = (function () {
 			// Tolerate rowdy inputs
 			options = _marshalOptions(options);
 
-			// Map everything to Mandrill's expectations
-			options = _serializeOptions(options);
+			// Handle `sendTemplate`
+			if (options.template) {
 
-			mandrill.messages.send(options,
+				// Validate and marshal template
+				if (!options.template) return cb('`template` must be specified');
+				options.data = options.data || {};
+
+				// Map everything to Mandrill's expectations
+				// and send the message
+				mandrill.messages.sendTemplate(
+				_serializeTemplateOptions(options),
+				function success (result) {
+					cb(null, result);
+				},
+				function error (err) {
+					cb(err);
+				});
+				return;
+			}
+
+			// Map everything to Mandrill's expectations
+			// and send the message
+			mandrill.messages.send(
+			_serializeOptions(options),
 			function success (result) {
 				cb(null, result);
 			},
@@ -78,13 +109,15 @@ module.exports = (function () {
 
 
 
+
+
 	/**
 	 * Extend usage options with collection configuration
 	 * (which also includes adapter defaults)
 	 * @api private
 	 */
-
 	function _extendOptions(cid, options) {
+
 		// Ignore unexpected options, use {} instead
 		options = _.isPlainObject(options) ? options : {};
 
@@ -95,11 +128,14 @@ module.exports = (function () {
 		return _.extend({}, options);
 	}
 
+
+
 	/**
 	 * @returns truthy value if options are invalid or incomplete
 	 * @api private
 	 */
 	function _validateOptions(options) {
+
 		if (!options.to) {
 			return '`to` must be specified, e.g.: { to: { email: "foo@bar.com", name: "Mr. Foo Bar" } }';
 		}
@@ -109,11 +145,14 @@ module.exports = (function () {
 	}
 
 
+
+
 	/**
 	 * @returns {Object} options with types normalized for consistency
 	 * @api private
 	 */
 	function _marshalOptions(options) {
+
 		if ( _.isString(options.to) ) {
 			options.to = [ { email: options.to } ];
 		}
@@ -133,12 +172,17 @@ module.exports = (function () {
 		return options;
 	}
 
+
+
+
 	/**
 	 * @returns {Object} options formatted for use w/ mandrill
+	 * (`send`)
 	 * @api private
 	 */
 	function _serializeOptions(options) {
-		_.merge(options, {
+
+		var serialized = _.merge({}, options, {
 			message: {
 				to: options.to,
 				html: options.html || '',
@@ -147,12 +191,43 @@ module.exports = (function () {
 				from_name: options.from.name
 			}
 		});
-		delete options.to;
-		delete options.from;
-		delete options.html;
-		delete options.text;
+		delete serialized.to;
+		delete serialized.from;
+		delete serialized.html;
+		delete serialized.text;
+		return serialized;
+	}
 
-		return options;
+
+
+
+	/**
+	 * @returns {Object} options formatted for use w/ mandrill
+	 * (`sendTemplate`)
+	 * @api private
+	 */
+	function _serializeTemplateOptions(options) {
+
+		var serialized = _.merge({}, options, {
+			template_name: options.template,
+			message: {
+				global_merge_vars: _.map(Object.keys(options.data),
+					function (key) {
+					return {
+						name: key,
+						content: options.data[key]
+					};
+				}),
+				to: options.to,
+				from_email: options.from.email,
+				from_name: options.from.name
+			}
+		});
+		delete serialized.template;
+		delete serialized.data;
+		delete serialized.to;
+		delete serialized.from;
+		return serialized;
 	}
 
 })();
