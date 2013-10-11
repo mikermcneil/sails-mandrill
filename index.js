@@ -208,16 +208,41 @@ module.exports = (function () {
 	 */
 	function _serializeTemplateOptions(options) {
 
+		// Build transformed data array
+		var mappedData = [];
+		_.each(options.data,function (v,k) {
+			recursiveTransform(null, v,k);
+		});
+		
+		// TODO: limit max depth and use tail-recursion
+		function recursiveTransform (keyPrefix, value, key) {
+			
+			// Recursive case
+
+			// Handle Waterline models
+			if ( _.isObject(value) && value.toJSON) {
+				value = value.toJSON();
+			}
+			// (break complex objects into pieces)
+			if ( _.isPlainObject(value)) {
+				_.each(value, function (v,k) {
+					recursiveTransform(key + '_', v,k);
+				});
+				return;
+			}
+
+			// Base case
+			mappedData.push({
+				name: keyPrefix ? keyPrefix + key : key,
+				content: value
+			});
+		}
+
 		var serialized = _.merge({}, options, {
 			template_name: options.template,
+			template_content: mappedData,
 			message: {
-				global_merge_vars: _.map(Object.keys(options.data),
-					function (key) {
-					return {
-						name: key,
-						content: options.data[key]
-					};
-				}),
+				global_merge_vars: mappedData,
 				to: options.to,
 				from_email: options.from.email,
 				from_name: options.from.name
