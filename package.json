@@ -1,6 +1,6 @@
 {
   "name": "sails-mandrill",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Mandrill adapter for sails.js",
   "main": "index.js",
   "scripts": {
