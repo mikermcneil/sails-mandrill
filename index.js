@@ -185,7 +185,7 @@ module.exports = (function () {
 		var serialized = _.merge({}, options, {
 			message: {
 				to: options.to,
-				subject: options.to,
+				subject: options.subject,
 				html: options.html || '',
 				text: options.text || undefined,
 				from_email: options.from.email,
