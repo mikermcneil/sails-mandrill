@@ -185,6 +185,7 @@ module.exports = (function () {
 		var serialized = _.merge({}, options, {
 			message: {
 				to: options.to,
+				subject: options.to,
 				html: options.html || '',
 				text: options.text || undefined,
 				from_email: options.from.email,
@@ -192,6 +193,7 @@ module.exports = (function () {
 			}
 		});
 		delete serialized.to;
+		delete serialized.subject;
 		delete serialized.from;
 		delete serialized.html;
 		delete serialized.text;
