@@ -38,7 +38,7 @@ module.exports = {
 
 ## Usage
 
-`send ( [options], [callback] )`
+#### `send ( [options], [callback] )`
 
 Generally, `sails-mandrill` accepts the same inputs as the official mandrill SDK for Node.js.  It does, however, simplify the usage a bit for the most basic options.
 You can override any of your connection defaults (including your API key!!!) in the options.
