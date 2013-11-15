@@ -3,12 +3,16 @@
  */
 
 var Mandrill	= require('mandrill-api').Mandrill,
-	_			= require('lodash');
+	_			= require('lodash'),
+	request 	= require('request');
 
 module.exports = (function () {
 
 	// Collection configurations
 	var _collectionConfigs = {};
+
+	// Base url to make some of requests.
+	var BASE_URL = 'https://mandrillapp.com/api/1.0';
 
 	var Adapter = {
 
@@ -102,7 +106,69 @@ module.exports = (function () {
 			function error (err) {
 				cb(err);
 			});
-		}
+		},
+
+
+
+
+		/*******************
+		 * Template Methods
+		 *******************/
+
+		/**
+		 * Get all mandrill templates.
+		 *
+		 * @param  {String}   cid     [Collection/Model identity or null]
+		 * @param  {Object}   options [Options used in request to find templates]
+		 * @param  {Function} cb      [Callback that passes errors or templates]
+		 */
+		listTemplates: function(cid, options, cb) {
+			cb =	_.isFunction(cb) ? cb :
+					_.isFunction(options) ? options :
+					function (){};
+			options = _extendOptions(cid, options);
+
+			request.post({
+				url: BASE_URL + '/templates/list.json',
+				form: {key: options.apiKey}
+			}, function(err, response, templates) {
+				if (err) return cb(err);
+				return cb(null, templates);
+			});
+		},
+
+		/**
+		 * [addTemplate description]
+		 *
+		 * @param  {String}   cid     [Collection/Model identity or null]
+		 * @param  {Object}   options [Options used in request to add template]
+		 * @param  {Function} cb      [Callback that passes errors or added template]
+		 */
+		addTemplate: function(cid, options, cb) {
+			cb =	_.isFunction(cb) ? cb :
+					_.isFunction(options) ? options :
+					function (){};
+			options = _extendOptions(cid, options);
+			request.post({
+				url: BASE_URL + '/templates/add.json',
+				form: {
+					key: options.apiKey,
+					name: options.name,
+					from_email: options.from_email,
+					from_name: options.from_name,
+					subject: options.subject,
+					code: options.code,
+					text: options.text || undefined,
+					publish: options.publish,
+					labels: options.labels
+				}
+			}, function(err, response, template) {
+				if (err) return cb(err);
+				return cb(null, template);
+		});
+  }
+
+
 	};
 
 	return Adapter;
