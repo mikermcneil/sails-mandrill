@@ -88,6 +88,43 @@ Email.send({
 TODO: document this
 
 
+#### `Model.listTemplates ( [options], [callback] )`
+
+Get your templates. The **key** property is required.
+
+```javascript
+Email.listTemplates({
+  key: API_KEY,
+  label: "example-label"
+}, function optionalCallback (err, templates) {
+    console.log(templates);
+});
+```
+
+#### `Model.addTemplate ( [options], [callback] )`
+
+Add a template. The **key** and **name** properties are required
+
+```javascript
+Email.listTemplates({
+  key: API_KEY,
+  name: "Example Template",
+  from_email: "from_email@example.com",
+  from_name: "Example Name",
+  subject: "example subject",
+  code: "<h1>example code</h1>",
+  text: "Example text content",
+  publish: false,
+  labels: [
+    "example-label"
+  ]
+}, function optionalCallback (err, template) {
+    console.log(template);
+});
+```
+
+
+
 
 
 
