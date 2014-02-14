@@ -1,7 +1,7 @@
 {
   "name": "sails-mandrill",
   "version": "0.10.0",
-  "description": "Mandrill adapter for sails.js",
+  "description": "Mandrill adapter for sails/waterline >= v0.10",
   "main": "index.js",
   "scripts": {
     "test": "mocha"
