@@ -22,6 +22,7 @@
   "dependencies": {
     "mandrill-api": "~1.0.33",
     "lodash": "~1.3.1",
-    "request": "~2.27.0"
+    "request": "~2.27.0",
+    "merge-defaults": "~0.1.0"
   }
 }

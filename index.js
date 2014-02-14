@@ -2,16 +2,18 @@
  * Adapter dependencies
  */
 
-var Mandrill	= require('mandrill-api').Mandrill,
-	_			= require('lodash'),
-	request 	= require('request');
+var Mandrill = require('mandrill-api').Mandrill,
+	_ = require('lodash'),
+	request = require('request');
+_.defaults = require('merge-defaults');
 
-module.exports = (function () {
 
-	// Collection configurations
-	var _collectionConfigs = {};
+module.exports = (function() {
 
-	// Base url to make some of requests.
+	// Connection configurations
+	var _connections = {};
+
+	// Base url for API requests.
 	var BASE_URL = 'https://mandrillapp.com/api/1.0';
 
 	var Adapter = {
@@ -21,36 +23,42 @@ module.exports = (function () {
 		// App-wide defaults for this adapter
 		defaults: {
 			from: {
-				name: 'Sails.js',
+				name: '<Your App>',
 				email: 'contact@yourapp.com'
 			}
 		},
 
 
 
-		registerCollection: function (collection, cb) {
+		registerConnection: function(connection, collections, cb) {
 
-			// Absorb defaults into collection configuration
-			collection.config = _.defaults(collection.config, Adapter.defaults);
+			// Absorb adapter defaults into connection config
+			var connectionConf = _.defaults(_.cloneDeep(connection), Adapter.defaults);
 
 			// Store each collection config for later
-			_collectionConfigs[collection.identity] = _.cloneDeep(collection.config);
-			cb();
-		},
-
-
-		teardown: function (cb) {
+			_connections[connection.identity] = {
+				config: connectionConf,
+				collections: collections
+			};
 
 			cb();
 		},
 
+
+		teardown: function(cb) {
+
+			cb();
+		},
 
 
 
 		/**
 		 * Send an email
 		 *
-		 * @param {String} cid - [optional]
+		 * @param {String} connID - [optional]
+		 *    Connection identity or null
+		 *
+		 * @param {String} collID - [optional]
 		 *		Collection/Model identity or null
 		 *
 		 * @param {Object} options - [optional]
@@ -59,15 +67,15 @@ module.exports = (function () {
 		 * @param {Function} cb - [optional]
 		 */
 
-		send: function (cid, options, cb) {
+		send: function(connID, collID, options, cb) {
 
-			cb =	_.isFunction(cb) ? cb : 
-					_.isFunction(options) ? options :
-					function (){};
-			options = _extendOptions(cid, options);
+			cb = _.isFunction(cb) ? cb :
+				_.isFunction(options) ? options :
+				function() {};
+			options = _extendOptions(connID, options);
 
 			var err = _validateOptions(options);
-			if ( err ) return cb(err);
+			if (err) return cb(err);
 
 			// Set-up API key
 			var mandrill = new Mandrill(options.apiKey);
@@ -86,28 +94,27 @@ module.exports = (function () {
 				// Map everything to Mandrill's expectations
 				// and send the message
 				mandrill.messages.sendTemplate(
-				_serializeTemplateOptions(options),
-				function success (result) {
-					cb(null, result);
-				},
-				function error (err) {
-					cb(err);
-				});
+					_serializeTemplateOptions(options),
+					function success(result) {
+						cb(null, result);
+					},
+					function error(err) {
+						cb(err);
+					});
 				return;
 			}
 
 			// Map everything to Mandrill's expectations
 			// and send the message
 			mandrill.messages.send(
-			_serializeOptions(options),
-			function success (result) {
-				cb(null, result);
-			},
-			function error (err) {
-				cb(err);
-			});
+				_serializeOptions(options),
+				function success(result) {
+					cb(null, result);
+				},
+				function error(err) {
+					cb(err);
+				});
 		},
-
 
 
 
@@ -118,19 +125,22 @@ module.exports = (function () {
 		/**
 		 * Get all mandrill templates.
 		 *
-		 * @param  {String}   cid     [Collection/Model identity or null]
+		 * @param  {String}   connID     [Connection identity or null]
+		 * @param  {String}   collID     [Collection/Model identity or null]
 		 * @param  {Object}   options [Options used in request to find templates]
 		 * @param  {Function} cb      [Callback that passes errors or templates]
 		 */
-		listTemplates: function(cid, options, cb) {
-			cb =	_.isFunction(cb) ? cb :
-					_.isFunction(options) ? options :
-					function (){};
-			options = _extendOptions(cid, options);
+		listTemplates: function(connID, collID, options, cb) {
+			cb = _.isFunction(cb) ? cb :
+				_.isFunction(options) ? options :
+				function() {};
+			options = _extendOptions(collID, options);
 
 			request.post({
 				url: BASE_URL + '/templates/list.json',
-				form: {key: options.apiKey}
+				form: {
+					key: options.apiKey
+				}
 			}, function(err, response, templates) {
 				if (err) return cb(err);
 				return cb(null, templates);
@@ -140,15 +150,16 @@ module.exports = (function () {
 		/**
 		 * [addTemplate description]
 		 *
-		 * @param  {String}   cid     [Collection/Model identity or null]
+		 * @param  {String}   connID     [Connection identity or null]
+		 * @param  {String}   collID     [Collection/Model identity or null]
 		 * @param  {Object}   options [Options used in request to add template]
 		 * @param  {Function} cb      [Callback that passes errors or added template]
 		 */
-		addTemplate: function(cid, options, cb) {
-			cb =	_.isFunction(cb) ? cb :
-					_.isFunction(options) ? options :
-					function (){};
-			options = _extendOptions(cid, options);
+		addTemplate: function(connID, collID, options, cb) {
+			cb = _.isFunction(cb) ? cb :
+				_.isFunction(options) ? options :
+				function() {};
+			options = _extendOptions(collID, options);
 			request.post({
 				url: BASE_URL + '/templates/add.json',
 				form: {
@@ -165,8 +176,8 @@ module.exports = (function () {
 			}, function(err, response, template) {
 				if (err) return cb(err);
 				return cb(null, template);
-		});
-  }
+			});
+		}
 
 
 	};
@@ -175,21 +186,19 @@ module.exports = (function () {
 
 
 
-
-
 	/**
 	 * Extend usage options with collection configuration
 	 * (which also includes adapter defaults)
 	 * @api private
 	 */
-	function _extendOptions(cid, options) {
+	function _extendOptions(connID, options) {
 
 		// Ignore unexpected options, use {} instead
 		options = _.isPlainObject(options) ? options : {};
 
-		// Apply collection defaults, if relevant
-		if (cid) {
-			return _.extend({}, _collectionConfigs[cid], options);
+		// Apply connection defaults, if relevant
+		if (connID) {
+			return _.extend({}, _connections[connID].config, options);
 		}
 		return _.extend({}, options);
 	}
@@ -212,32 +221,36 @@ module.exports = (function () {
 
 
 
-
 	/**
 	 * @returns {Object} options with types normalized for consistency
 	 * @api private
 	 */
 	function _marshalOptions(options) {
 
-		if ( _.isString(options.to) ) {
-			options.to = [ { email: options.to } ];
+		if (_.isString(options.to)) {
+			options.to = [{
+				email: options.to
+			}];
 		}
-		if ( _.isPlainObject(options.to) ) {
-			options.to = [ options.to ];
+		if (_.isPlainObject(options.to)) {
+			options.to = [options.to];
 		}
-		_.map(options.to, function (recipient) {
-			if ( _.isString(recipient) ) {
-				return { email: recipient };
+		_.map(options.to, function(recipient) {
+			if (_.isString(recipient)) {
+				return {
+					email: recipient
+				};
 			}
 			return recipient;
 		});
 
-		if ( _.isString(options.from) ) {
-			options.from = { email: options.from };
+		if (_.isString(options.from)) {
+			options.from = {
+				email: options.from
+			};
 		}
 		return options;
 	}
-
 
 
 
@@ -268,7 +281,6 @@ module.exports = (function () {
 
 
 
-
 	/**
 	 * @returns {Object} options formatted for use w/ mandrill
 	 * (`sendTemplate`)
@@ -278,23 +290,23 @@ module.exports = (function () {
 
 		// Build transformed data array
 		var mappedData = [];
-		_.each(options.data,function (v,k) {
-			recursiveTransform(null, v,k);
+		_.each(options.data, function(v, k) {
+			recursiveTransform(null, v, k);
 		});
-		
+
 		// TODO: limit max depth and use tail-recursion
-		function recursiveTransform (keyPrefix, value, key) {
-			
+		function recursiveTransform(keyPrefix, value, key) {
+
 			// Recursive case
 
 			// Handle Waterline models
-			if ( _.isObject(value) && value.toJSON) {
+			if (_.isObject(value) && value.toJSON) {
 				value = value.toJSON();
 			}
 			// (break complex objects into pieces)
-			if ( _.isPlainObject(value)) {
-				_.each(value, function (v,k) {
-					recursiveTransform(key + '_', v,k);
+			if (_.isPlainObject(value)) {
+				_.each(value, function(v, k) {
+					recursiveTransform(key + '_', v, k);
 				});
 				return;
 			}
