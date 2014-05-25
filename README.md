@@ -34,10 +34,10 @@ module.exports.connections = {
 
 ## Hook up a Model to your new connection
 
-###### config/models/Email.js
+###### api/models/Email.js
 ```javascript
 module.exports = {
-  connections: ['my favorite mandrill account']
+  connection: ['my favorite mandrill account']
 };
 
 ```
