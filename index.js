@@ -45,7 +45,7 @@ module.exports = (function() {
 		},
 
 
-		teardown: function(cb) {
+		teardown: function(connID, cb) {
 
 			cb();
 		},
