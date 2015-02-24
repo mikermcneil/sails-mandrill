@@ -1,6 +1,12 @@
 sails-mandrill
 ==============
 
+
+Please see machinepack-mandrill instead:
++ http://node-machine.org/machinepack-mandrill
++ https://github.com/mikermcneil/machinepack-mandrill
+
+<!--
 Mandrill adapter for sails.js
 
 You can use this adapter directly, or from a model.  I recommend you set up a connection, link it to a model, and access the functionality that way.  It makes for cleaner and more reusable code.
@@ -149,3 +155,4 @@ sendEmail({
   // If `err` is set, the send failed.  Otherwise, we're good!
 });
 ```
+-->
