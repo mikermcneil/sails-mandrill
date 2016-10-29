@@ -6,6 +6,13 @@ Please see machinepack-mandrill instead:
 + http://node-machine.org/machinepack-mandrill
 + https://github.com/mikermcneil/machinepack-mandrill
 
+### Why?
+See https://github.com/treelinehq/waterline-query-docs/issues/2.
+
+
+
+
+
 <!--
 Mandrill adapter for sails.js
 
